@@ -108,9 +108,10 @@ for feature in categorical_features:
     print('Feature {}, No of Categories {}'.format(feature, len(dataset[feature].unique())))
 
 # Relationship of categorical features with dependent feature
-
-
-
-
-
-
+for feature in categorical_features:
+    data = dataset.copy()
+    data.groupby(feature)['SalePrice'].median().plot.bar()
+    plt.xlabel(feature)
+    plt.ylabel('SalePrice')
+    plt.title(feature)
+    plt.show()
