@@ -38,9 +38,53 @@ for feature in numerical_with_nan_features:
     dataset[feature].fillna(median_value, inplace=True)
 
 dataset[numerical_with_nan_features].isnull().sum()
+
+# Date Time Variables    
+for feature in ['YearBuilt', 'YearRemodAdd', 'GarageYrBlt']:    
+    dataset[feature] = dataset['YrSold'] - dataset[feature]
+
+dataset.head()
+
+# Converting skewed data in continuous features 
+# to normally distributed data using logarithmic transformation
+num_features = ['LotFrontage', 'LotArea', '1stFlrSF', 'GrLivArea', 'SalePrice']
+
+for feature in num_features:
+    dataset[feature] = np.log(dataset[feature])
+
+# Handling Rare Categorical Feature
+categorical_features = [feature for feature in dataset.columns if dataset[feature].dtype == 'O']
+
+print(len(categorical_features))
+
+for feature in categorical_features:
+    temp = dataset.groupby(feature)['SalePrice'].count()/len(dataset)
+    temp_df = temp[temp > 0.01].index
+    dataset[feature] = np.where(dataset[feature].isin(temp_df), dataset[feature], 'Rare_var')
+
+# Feature Scaling
+for feature in categorical_features:
+    labels_ordered = dataset.groupby([feature])['SalePrice'].mean().sort_values().index
+    labels_ordered = {k: i for i, k in enumerate(labels_ordered,0)}
+    dataset[feature] = dataset[feature].map(labels_ordered)
     
+feature_scale = [feature for feature in dataset.columns if feature not in ['Id', 'SalePrice']]
     
-    
-    
-    
-    
+from sklearn.preprocessing import MinMaxScaler
+scaler = MinMaxScaler()
+scaler.fit(dataset[feature_scale])
+
+# transform the train and test set, and add on the Id and SalePrice variables
+data = pd.concat([dataset[['Id', 'SalePrice']].reset_index(drop=True),
+                  pd.DataFrame(scaler.transform(dataset[feature_scale]), columns=feature_scale)],
+                  axis=1)
+
+data.to_csv('X_train.csv', index=False)
+
+
+
+
+
+
+
+
