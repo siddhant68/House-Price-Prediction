@@ -5,6 +5,7 @@ import matplotlib.pyplot as plt
 pd.pandas.set_option('display.max_columns', None)
 
 dataset = pd.read_csv('train.csv')
+
 dataset.head()
 
 # Splitting dataset
@@ -62,12 +63,12 @@ for feature in categorical_features:
     temp_df = temp[temp > 0.01].index
     dataset[feature] = np.where(dataset[feature].isin(temp_df), dataset[feature], 'Rare_var')
 
-# Feature Scaling
 for feature in categorical_features:
     labels_ordered = dataset.groupby([feature])['SalePrice'].mean().sort_values().index
     labels_ordered = {k: i for i, k in enumerate(labels_ordered,0)}
     dataset[feature] = dataset[feature].map(labels_ordered)
-    
+
+# Feature Scaling    
 feature_scale = [feature for feature in dataset.columns if feature not in ['Id', 'SalePrice']]
     
 from sklearn.preprocessing import MinMaxScaler
@@ -80,11 +81,3 @@ data = pd.concat([dataset[['Id', 'SalePrice']].reset_index(drop=True),
                   axis=1)
 
 data.to_csv('X_train.csv', index=False)
-
-
-
-
-
-
-
-
